@@ -1,6 +1,6 @@
 
 :root {
-    --gridSize: 600px;
+    --gridSize: 80vmin;
 }
 
 * {
@@ -41,13 +41,16 @@ body {
 }
 
 .button {
-    background-color: lightblue;
-    padding: 10px;
-    margin: 10px;
+    padding: 0 5px;
+    margin-top: 10px;
+
     border-radius: 5px;
     border: #151515 solid 1px;
-    box-shadow: 0px 2px 2px rgba(15, 15, 15, 0.8);
+    box-shadow: 0px 2px 2px rgba(122, 122, 122, 0.8);
     cursor: pointer;
+
+    background-color: lightblue;
     color: #151515;
     font-weight: bold;
+    font-size: calc( var(--gridSize) / 9 * 0.5 );
 }

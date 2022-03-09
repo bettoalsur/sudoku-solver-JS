@@ -34,7 +34,7 @@ grid = [0,0,0, 0,9,0, 3,0,0,
         0,0,0, 9,0,0, 2,0,5,
         0,1,2, 5,0,0, 0,6,3,
         7,0,4, 0,0,0, 0,0,8];
-/*
+
 grid = [0,4,7, 0,0,1, 0,0,2,
         5,0,0, 0,0,0, 4,0,0,
         9,0,0, 0,4,0, 0,1,5,
@@ -54,7 +54,6 @@ grid = [6,0,3, 0,0,0, 2,0,4,
         0,9,0, 0,0,0, 0,5,0,
         0,0,0, 5,0,8, 0,0,0,
         5,0,4, 0,0,0, 6,0,1];
-*/
 
 let originalGrid = grid.map(x => x);
 
@@ -236,11 +235,131 @@ function lookForMissingNumbers() {
     lookForMissingNumbers();
 }
 
-function solve() {
+function isValidSolution() {
+    for (let j = 0 ; j < 9 ; j++) {
+        let accColumn = 0;
+        let accRow = 0;
+        for (let i = 0 ; i < 9 ; i++) {
+            let indexForColumn = j + i*9;
+            let indexForRow = i + j*9;
+            accColumn += grid[indexForColumn];
+            accRow += grid[indexForRow];
+        }
+        if (accColumn!=45 || accRow!=45) {
+            return false;
+        }
+    }
+    return true;
+}
+
+function guessNumbers() {
+
+    for (let j = 0; j < 9 ; j++) {
+
+        let rowNumbers = [];
+        let colNumbers = [];
+        let secNumbers = [];
+
+        for (let i = 0; i < 9 ; i++) {
+            let indexForRow = i + j*9;
+            let indexForColumn = j + i*9;
+            let indexForSector = sectorMainIndexes[j] + sectorIterationIndexes[i];
+            rowNumbers.push(grid[indexForRow]);
+            colNumbers.push(grid[indexForColumn]);
+            secNumbers.push(grid[indexForSector]);
+        }
+
+        // for rows...
+        let rowMissingNumbers = [];
+        let rowMissingIndexes = [];
+        // for columns...
+        let colMissingNumbers = [];
+        let colMissingIndexes = [];
+        // for sector...
+        let secMissingNumbers = [];
+        let secMissingIndexes = [];
+
+        for (let i = 0; i < 9 ; i++) {
+            if ( rowNumbers[i] == 0 ) rowMissingIndexes.push(i);
+            if ( !rowNumbers.includes(i+1) ) rowMissingNumbers.push(i+1);
+            
+            if ( colNumbers[i] == 0 ) colMissingIndexes.push(i);
+            if ( !colNumbers.includes(i+1) ) colMissingNumbers.push(i+1);
+
+            if ( secNumbers[i] == 0 ) secMissingIndexes.push(i);
+            if ( !secNumbers.includes(i+1) ) secMissingNumbers.push(i+1);
+        }
+
+        // for row...
+        for (let col of rowMissingIndexes) {
+            for (let number of rowMissingNumbers) {
+                let gridBackup = grid.map(x => x);
+                let index = col + j*9;
+                grid[index] = number;
+                noGuessingMethods();
+                if (isValidSolution()) {
+                    console.log("Your solution is completed");
+                    renderGrid();
+                    return;
+                } else {
+                    grid = gridBackup;
+                }
+            }
+        }
+
+        // for column...
+        for (let row of colMissingIndexes) {
+            for (let number of colMissingNumbers) {
+                let gridBackup = grid.map(x => x);
+                let index = j + row*9;
+                grid[index] = number;
+                noGuessingMethods();
+                if (isValidSolution()) {
+                    console.log("Your solution is completed");
+                    renderGrid();
+                    return;
+                } else {
+                    grid = gridBackup;
+                }
+            }
+        }
+
+        // for sector...
+        for (let indexInSector of secMissingIndexes) {
+            for (let number of secMissingNumbers) {
+                let gridBackup = grid.map(x => x);
+                let index = sectorMainIndexes[j] + sectorIterationIndexes[indexInSector];
+                grid[index] = number;
+                noGuessingMethods();
+                if (isValidSolution()) {
+                    console.log("Your solution is completed");
+                    renderGrid();
+                    return;
+                } else {
+                    grid = gridBackup;
+                }
+            }
+        }
+    }
+    console.log("We couldn't solve this Sudoku :(")
+}
+
+function noGuessingMethods() {
     lookForNumbers();
     lookForMissingNumbers();
-    // funcao para adivinhar...
-    renderGrid();
+}
+
+function solve() {
+    
+    noGuessingMethods();
+    
+    if (isValidSolution()) {
+        console.log("Your solution is completed");
+        renderGrid();
+    } else {
+        console.log("We had to guess some numbers");
+        guessNumbers();
+    }
 }
 
 // 
