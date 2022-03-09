@@ -1,8 +1,13 @@
 
-let grid;
+let grid = [];
+let originalGrid;
+
+for (let i = 0 ; i < 81 ; i++) {
+    grid.push(0);
+}
 
 // the easiest sudokus...
-
+/*
 grid = [5,3,0, 0,7,0, 0,0,0,
         6,0,0, 1,9,5, 0,0,0,
         0,9,8, 0,0,0, 0,6,0, 
@@ -54,8 +59,7 @@ grid = [6,0,3, 0,0,0, 2,0,4,
         0,9,0, 0,0,0, 0,5,0,
         0,0,0, 5,0,8, 0,0,0,
         5,0,4, 0,0,0, 6,0,1];
-
-let originalGrid = grid.map(x => x);
+*/
 
 let sectorMainIndexes = [0,3,6, 27,30,33, 54,57,60];
 let sectorIterationIndexes = [0,1,2, 9,10,11, 18,19,20];
@@ -252,6 +256,36 @@ function isValidSolution() {
     return true;
 }
 
+function wellPlaced() {
+
+    let wellPlaced = true;
+    for (let j = 0; j < 9 ; j++) {
+    
+        let rowNumbers = [];
+        let colNumbers = [];
+        let secNumbers = [];
+    
+        for (let i = 0; i < 9 ; i++) {
+            let indexForRow = i + j*9;
+            let indexForColumn = j + i*9;
+            let indexForSector = sectorMainIndexes[j] + sectorIterationIndexes[i];
+            rowNumbers.push(grid[indexForRow]);
+            colNumbers.push(grid[indexForColumn]);
+            secNumbers.push(grid[indexForSector]);
+        }
+
+        for (let i = 1; i <= 9 ; i++) {
+            if (rowNumbers.filter(num => num===i).length > 1 ||
+                colNumbers.filter(num => num===i).length > 1 ||
+                secNumbers.filter(num => num===i).length > 1 ) { 
+                wellPlaced = false;
+                return wellPlaced;
+            }
+        }
+    }
+    return wellPlaced;
+}
+
 function guessNumbers() {
 
     for (let j = 0; j < 9 ; j++) {
@@ -332,7 +366,7 @@ function guessNumbers() {
                 grid[index] = number;
                 noGuessingMethods();
                 if (isValidSolution()) {
-                    console.log("Your solution is completed");
+                    showMessage("Your solution is completed. It was a hard one!");
                     renderGrid();
                     return;
                 } else {
@@ -341,7 +375,7 @@ function guessNumbers() {
             }
         }
     }
-    console.log("We couldn't solve this Sudoku :(")
+    showMessage("We couldn't solve this Sudoku :(")
 }
 
 function noGuessingMethods() {
@@ -354,10 +388,9 @@ function solve() {
     noGuessingMethods();
     
     if (isValidSolution()) {
-        console.log("Your solution is completed");
+        showMessage("Your solution is completed. It was an easy one!");
         renderGrid();
     } else {
-        console.log("We had to guess some numbers");
         guessNumbers();
     }
 }
@@ -365,6 +398,29 @@ function solve() {
 // 
 // 
 // 
+
+function createInputs() {
+    const gridObject = document.querySelector(".grid");
+    let content = "";
+
+    let backGroundColor;
+
+    for (let row = 0 ; row < 9 ; row++) {
+        for (let col = 0 ; col < 9 ; col++) {
+
+            let index = col + row*9;
+            let sectorIndex = Math.trunc(col/3)*3 + Math.trunc(row/3)*3 * 9;
+
+            if ( [0,2,4,6,8].map(x => sectorMainIndexes[x]).includes(sectorIndex) ) backGroundColor = "white";
+            else backGroundColor = "#D4E6F1";
+
+            content += `
+                <input type="number" class="cell" style="background-color: ${backGroundColor};">
+            `;
+        }
+    }
+    gridObject.innerHTML = content;
+}
 
 function renderGrid() {
     const gridObject = document.querySelector(".grid");
@@ -399,11 +455,57 @@ function renderGrid() {
     gridObject.innerHTML = content;
 }
 
-let button = document.querySelector(".button");
-button.addEventListener("click",solve);
+function getInputs() {
+    const myInputs = document.querySelector(".grid").children;
+    invalidInputs = false;
+    for (let i = 0 ; i < 81 ; i++) {
+        let input = myInputs[i];
+
+        if (input.value == "") {
+            grid[i] = 0;
+        }
+        else if (parseInt(input.value) < 0 || parseInt(input.value) > 9) {
+            invalidInputs = true;
+            break;
+        }
+        else {
+            grid[i] = parseInt( input.value );
+        }
+    }
+
+    if (invalidInputs) {
+        showMessage("There are invalid inputs");
+    } else if ( grid.filter(val => val !== 0).length < 17 ) {
+        showMessage("There are not enough inputs to solve (min. 17)");
+    } else if (!wellPlaced()) {
+        showMessage("Some numbers are misplaced");
+    } else {
+        showMessage("We're ready to start solving");
+        originalGrid = grid.map(x => x);
+        renderGrid();
+
+        let solveBtn = document.querySelector(".button.solve");
+        solveBtn.classList.remove("hide");
+
+        let doneBtn = document.querySelector(".button.done");
+        doneBtn.classList.add("hide");
+    }
+}
+
+function showMessage(message) {
+    const messageBox = document.querySelector(".message-box");
+    messageBox.textContent = message;
+}
+
+let solveBtn = document.querySelector(".button.solve");
+solveBtn.addEventListener("click",solve);
+
+let doneBtn = document.querySelector(".button.done");
+doneBtn.addEventListener("click",getInputs);
 
 // 
 // 
 // 
 
-renderGrid();
+createInputs();
+showMessage("Please fill the blank spaces with the known numbers");
