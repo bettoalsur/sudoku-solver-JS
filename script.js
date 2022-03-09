@@ -332,7 +332,7 @@ function guessNumbers() {
                 grid[index] = number;
                 noGuessingMethods();
                 if (isValidSolution()) {
-                    console.log("Your solution is completed");
+                    showMessage("Your solution is completed. It was a hard one!");
                     renderGrid();
                     return;
                 } else {
@@ -349,7 +349,7 @@ function guessNumbers() {
                 grid[index] = number;
                 noGuessingMethods();
                 if (isValidSolution()) {
-                    console.log("Your solution is completed");
+                    showMessage("Your solution is completed. It was a hard one!");
                     renderGrid();
                     return;
                 } else {
